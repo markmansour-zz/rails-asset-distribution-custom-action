@@ -10,7 +10,6 @@ class JobWorkersController < ApplicationController
     logger.info "headers"
     #    logger.info request.headers.inspect
 
-    result = false
     job_id = nil
 
     begin
@@ -46,14 +45,13 @@ class JobWorkersController < ApplicationController
         if rails_app_meta_data.empty?
           success = codepipeline.put_job_failure_result(
             job_id: job.id,
-            execution_details: {
+            failure_details: {
               type: "ConfigurationError",
               message: "No artifact specified to extract assets from.",
               external_execution_id: '102',  # this should be unique
             }
           )
 
-          result = true
           render plain: "Rails Artifact not specified", status: 400
           return
         end
@@ -115,8 +113,6 @@ class JobWorkersController < ApplicationController
             percent_complete: 100}
         )
 
-        result = true
-
         logger.info "success is #{success} for job id #{job.id}"
 
         render plain: "Ok", status: 200
@@ -124,40 +120,29 @@ class JobWorkersController < ApplicationController
         logger.info "#{message_id}: No Jobs"
         render plain: "Ok", status: 200
       end
-    rescue Aws::CodePipeline::Errors::ServiceError => e
-      # rescues all errors returned by AWS CodePipeline
+    rescue Aws::CodePipeline::Errors::ServiceError,
+           RuntimeError,
+           StandardError => e
       logger.error "#{message_id}: contains an error"
       logger.error e
 
-      job_id = job.id if job && job.id
-      job_id ||= 'unknown'
-
-      success = codepipeline.put_job_failure_result(
-        job_id: job_id,
-        execution_details: {
-          type: "JobFailed",
-          message: "error: #{e}",
-          external_execution_id: '102',  # this should be unique
-        }
-      )
-      result = true
-
-      render plain: e, status: 500
-    ensure
-      if ! result
-        job_id = job.id if job && job.id
-        job_id ||= 'unknown'
-
+      if job_id
         success = codepipeline.put_job_failure_result(
-          job_id: job_id,
-          execution_details: {
-            type: "JobFailed",
-            message: "error: #{e}",
-            external_execution_id: '102',  # this should be unique
+          {
+            job_id: job_id,
+            failure_details: {
+              type: "JobFailed",
+              message: "error: #{e}",
+              external_execution_id: '102'  # this should be unique
+            }
           }
         )
-        result = true
+        logger.error "#{message_id}: Put Job failure for #{job_id}"
+      else
+        logger.error "There is need to update job status as no job was acknowledged."
       end
+
+      render plain: e, status: 500
     end
   end
 end
