@@ -1,0 +1,3 @@
+#!/bin/sh
+
+curl -vv -X POST -d '' http://52.1.23.14/ --header "Content-Type:application/json" --header "User-Agent:aws-sqsd" --header "X-Aws-Sqsd-Msgid:1010101010" --header "X-Aws-Sqsd-Queue:queue" --header "X-Aws-Sqsd-First-Received-At:20150915T00:00:00" --header "X-Aws-Sqsd-Taskname:sqs-task" --header "X-Aws-Sqsd-Sender-Id:1234567890"
