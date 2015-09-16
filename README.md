@@ -24,6 +24,80 @@ $ aws s3 mb markmans-reinvent-demo-assets
 Role Name: AWSElasticBeanstalkInstanceProfile
 ## Create New Role
 Role Name: aws-elasticbeanstalk-instance-profile-role
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "QueueAccess",
+            "Action": [
+                "sqs:ChangeMessageVisibility",
+                "sqs:DeleteMessage",
+                "sqs:ReceiveMessage",
+                "sqs:SendMessage"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+            "Sid": "MetricsAccess",
+            "Action": [
+                "cloudwatch:PutMetricData"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+            "Sid": "BucketAccess",
+            "Action": [
+                "s3:Get*",
+                "s3:List*",
+                "s3:PutObject"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "arn:aws:s3:::elasticbeanstalk-*-{{accountid}}/*",
+                "arn:aws:s3:::elasticbeanstalk-*-{{accountid}}-*/*"
+            ]
+        },
+        {
+            "Sid": "DynamoPeriodicTasks",
+            "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:Scan",
+                "dynamodb:UpdateItem"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "arn:aws:dynamodb:*:*:table/*-stack-AWSEBWorkerCronLeaderRegistry*"
+            ]
+        },
+        {
+            "Sid": "ECSAccess",
+            "Effect": "Allow",
+            "Action": [
+                "ecs:StartTask",
+                "ecs:StopTask",
+                "ecs:RegisterContainerInstance",
+                "ecs:DeregisterContainerInstance",
+                "ecs:DiscoverPollEndpoint",
+                "ecs:Submit*",
+                "ecs:Poll"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+
+
+attach Policy:
+* AWSCodePipelineCustomActionAccess
+
+
 
 
 # Create an Elastic Beanstalk App via the Console

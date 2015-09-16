@@ -1,4 +1,8 @@
 class JobWorkersController < ApplicationController
+  def create
+    index
+  end
+  
   def index
     # Elastic Beanstalk workers will provide an SQS message id
     message_id = request.headers['X-Aws-Sqsd-Msgid']
