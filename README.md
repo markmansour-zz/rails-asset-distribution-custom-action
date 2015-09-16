@@ -1,7 +1,11 @@
 The custom action will be managed by an Elastic Beanstalk worker environment, running as a periodic process.
 
 
+
 # Create an S3 bucket to store assets in
+
+# Create IAM instance policy for Elastic Beanstalk
+RoleName: aws-elastic-beanstalk-instance-profile
 
 
 # Create an Elastic Beanstalk App via the Console
@@ -38,6 +42,8 @@ The custom action will be managed by an Elastic Beanstalk worker environment, ru
 * Instance Profile: <create IAM role>
 * Service Role: <create the default role>
 
+# Create a Rails Application to process AWS CodePipeline Jobs
+$ rails new rails-asset-distribution-custom-action -O # skips active record
 
 # Notes
 
