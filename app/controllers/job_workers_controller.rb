@@ -14,8 +14,13 @@ class JobWorkersController < ApplicationController
     region = 'us-east-1'
 
     logger.info "message id #{message_id}"
-    logger.info "headers"
-    #    logger.info request.headers.inspect
+    logger.info "environment args"
+    logger.info <<EOF
+ENV['AWS_ACCESS_KEY_ID']     => #{ENV['AWS_ACCESS_KEY_ID']}
+ENV['AWS_SECRET_ACCESS_KEY'] => #{ENV['AWS_SECRET_ACCESS_KEY']}
+ENV['S3_ASSET_BUCKET']       => #{ENV['S3_ASSET_BUCKET']}
+ENV['AWS_DEFAULT_REGION']    => #{ENV['AWS_DEFAULT_REGION']}
+EOF
 
     job_id = nil
 
