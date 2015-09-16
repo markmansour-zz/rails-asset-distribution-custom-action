@@ -10,6 +10,9 @@ class JobWorkersController < ApplicationController
     logger.info "headers"
     #    logger.info request.headers.inspect
 
+    result = false
+    job_id = nil
+
     begin
       # NOTE: should the codepipeline object be instantiated each time?  (probably)
       codepipeline = Aws::CodePipeline::Client.new(region: 'us-east-1')
@@ -29,6 +32,7 @@ class JobWorkersController < ApplicationController
       if poll_results.jobs.size > 0
         logger.info "#{message_id}: Processing Job"
         job = poll_results.jobs.first
+        job_id = job.id
 
         logger.info "#{message_id}: Acknowledging Job #{job}"
         logger.info "#{message_id}: Job id #{job.id}"
@@ -49,6 +53,7 @@ class JobWorkersController < ApplicationController
             }
           )
 
+          result = true
           render plain: "Rails Artifact not specified", status: 400
           return
         end
@@ -65,23 +70,42 @@ class JobWorkersController < ApplicationController
 
         s3 = Aws::S3::Client.new(region: region)
 
-        Dir.mktmpdir("precompile-assets") do |dir|
-          File.open(File.join(dir, filename), "wb") do |file|
-            # NOTE - should I be doing something with encryption?
-            s3.get_object(bucket: s3_location.bucket_name, key: s3_location.object_key) do |chunk|
-              file.write(chunk)
-            end
+        dir = Dir.mktmpdir("precompile-assets")
+        file = File.open(File.join(dir, filename), "wb")
 
-            # Copy to S3
-            `unzip #{file.path}`
-            `aws s3 sync #{dir}/public/assets s3://markmans-reinvent-demo-assets/assets/`
-            # cd dir
-            # unzip file
-            # bundle
-            # bundle exec rake RAILS_ENV=production assets:precompile
-            # S3 Sync public/assets specified bucket
+        # NOTE - should I be doing something with encryption?
+        s3.get_object(bucket: s3_location.bucket_name, key: s3_location.object_key) do |chunk|
+          file.write(chunk)
+        end
+
+        file.close
+
+        logger.info "write file #{file.path}"
+        # Copy to S3
+        logger.info "== Unzip #{file.path}"
+        output = `unzip #{file.path} -d #{dir}/unzipped`
+        logger.info output
+
+        logger.info "== Ensure we have the gems"
+        Dir.chdir "#{dir}/unzipped" do
+          cmd = "bundle"
+          output = `#{cmd}`
+          logger.info output
+        end
+
+        logger.info "== Precompile the assets"
+        Bundler.with_clean_env do
+          Dir.chdir "#{dir}/unzipped" do
+            output = `RAILS_ENV=production bundle exec rake assets:precompile`
+            logger.info output
           end
         end
+
+        logger.info "== Sync to S3"
+        asset_bucket = ENV['S3_ASSET_BUCKET'] || "markmans-reinvent-demo-assets"
+        logger.info "ENV S3 asset bucket #{asset_bucket}"
+        output = `aws s3 sync #{dir}/unzipped/public/assets s3://#{asset_bucket}/assets/`
+        logger.info output
 
         success = codepipeline.put_job_success_result(
           job_id: job.id,
@@ -91,7 +115,9 @@ class JobWorkersController < ApplicationController
             percent_complete: 100}
         )
 
-        logger.info "success is #{success}"
+        result = true
+
+        logger.info "success is #{success} for job id #{job.id}"
 
         render plain: "Ok", status: 200
       else
@@ -114,8 +140,24 @@ class JobWorkersController < ApplicationController
           external_execution_id: '102',  # this should be unique
         }
       )
+      result = true
 
       render plain: e, status: 500
+    ensure
+      if ! result
+        job_id = job.id if job && job.id
+        job_id ||= 'unknown'
+
+        success = codepipeline.put_job_failure_result(
+          job_id: job_id,
+          execution_details: {
+            type: "JobFailed",
+            message: "error: #{e}",
+            external_execution_id: '102',  # this should be unique
+          }
+        )
+        result = true
+      end
     end
   end
 end
