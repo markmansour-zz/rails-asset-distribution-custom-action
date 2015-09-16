@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
-#  root 'job_workers#index'
-  resources :job_workers, :path => '/'
+  resources :job_workers
+
+  get '/', to: 'job_workers#index'
+  post '/', to: 'job_workers#create'
 end

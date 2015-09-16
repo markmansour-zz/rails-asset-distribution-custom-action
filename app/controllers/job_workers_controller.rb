@@ -1,18 +1,19 @@
 class JobWorkersController < ApplicationController
   skip_before_action :verify_authenticity_token
-  
-  def create
-    index
+
+  def index
+    render plain: "Called as a GET.  This endpoint responds to POST", status: 200
   end
   
-  def index
+  def show
+  end
+  
+  def create
     # Elastic Beanstalk workers will provide an SQS message id
     message_id = request.headers['X-Aws-Sqsd-Msgid']
-    message_id_2 = request.headers['HTTP_X_Aws_Sqsd_Msgid']
     region = 'us-east-1'
 
     logger.info "message id #{message_id}"
-    logger.info "message id 2 #{message_id_2}"
     logger.info "headers"
     #    logger.info request.headers.inspect
 
@@ -58,8 +59,7 @@ class JobWorkersController < ApplicationController
             }
           )
 
-          render plain: "Rails Artifact not specified", status: 400
-          return
+          return render json: { status: "error", message: "Rails Artifact not specified" }, status: 400
         end
 
         logger.info "#{message_id}: Returning success status"
@@ -120,11 +120,10 @@ class JobWorkersController < ApplicationController
         )
 
         logger.info "success is #{success} for job id #{job.id}"
-
-        render plain: "Ok", status: 200
+        return render json: { status:"ok" }, status: 200
       else
         logger.info "#{message_id}: No Jobs"
-        render plain: "Ok", status: 200
+        return render json: { status:"ok" }, status: 200
       end
     rescue Aws::CodePipeline::Errors::ServiceError,
            RuntimeError,
@@ -148,7 +147,7 @@ class JobWorkersController < ApplicationController
         logger.error "There is need to update job status as no job was acknowledged."
       end
 
-      render plain: e, status: 500
+      render json: { status: error, message: e}.to_json, status: 500
     end
   end
 end
