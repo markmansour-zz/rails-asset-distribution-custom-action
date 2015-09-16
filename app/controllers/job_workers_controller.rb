@@ -147,7 +147,7 @@ class JobWorkersController < ApplicationController
         logger.error "There is need to update job status as no job was acknowledged."
       end
 
-      render json: { status: error, message: e}.to_json, status: 500
+      render json: { status: "error", message: e}.to_json, status: 500
     end
   end
 end
