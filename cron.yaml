@@ -1,0 +1,5 @@
+version: 1
+cron:
+ - name: "poll-for-rails-asset-distribution-jobs"  # required - unique across all entries in this file
+   url: "/"                                        # required - does not need to be unique
+   schedule: "* * * * *"                           # required - does not need to be unique
