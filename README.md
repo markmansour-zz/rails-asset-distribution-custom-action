@@ -11,7 +11,7 @@ For development purposes, allow requests to be served from port 80 on EC2 instac
 $ sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 3000
 
 ## Start the server
-$ rails server --binding=`curl http://169.254.169.254/latest/meta-data/local-ipv4`
+$ rails server --daemon --binding=`curl http://169.254.169.254/latest/meta-data/local-ipv4`
 
 ## Stop the server
 $ kill $(cat tmp/pids/server.pid)
