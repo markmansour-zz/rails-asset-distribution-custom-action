@@ -2,10 +2,28 @@ The custom action will be managed by an Elastic Beanstalk worker environment, ru
 
 
 
+# Create a Rails Application to process AWS CodePipeline Jobs
+$ rails new rails-asset-distribution-custom-action -O # skips active record
+
+# Setup development env
+For development purposes, allow requests to be served from port 80 on EC2 instace, which has the port unblocked
+
+$ sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 3000
+
+## Start the server
+$ rails server --binding=`curl http://169.254.169.254/latest/meta-data/local-ipv4`
+
+## Stop the server
+$ kill $(cat tmp/pids/server.pid)
+
+
 # Create an S3 bucket to store assets in
 
 # Create IAM instance policy for Elastic Beanstalk
-RoleName: aws-elastic-beanstalk-instance-profile
+## Create New Policy
+Role Name: AWSElasticBeanstalkInstanceProfile
+## Create New Role
+Role Name: aws-elasticbeanstalk-instance-profile-role
 
 
 # Create an Elastic Beanstalk App via the Console
