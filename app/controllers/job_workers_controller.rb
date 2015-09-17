@@ -102,7 +102,7 @@ EOF
             logger.info "GEM_ROOT from backtick is"
             logger.info `echo $GEM_ROOT`
             logger.info "== Ensure we have the gems"
-            output = `bundle`
+            output = `bundle install vendor/bundle`
             logger.info output
 
             logger.info "== Precompile the assets"
