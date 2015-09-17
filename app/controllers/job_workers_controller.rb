@@ -97,6 +97,10 @@ EOF
 
         Bundler.with_clean_env do
           Dir.chdir "#{dir}/unzipped" do
+            logger.info "GEM_ROOT from ruby is"
+            logger.info "ENV['GEM_ROOT']"
+            logger.info "GEM_ROOT from backtick is"
+            logger.info `echo $GEM_ROOT`
             logger.info "== Ensure we have the gems"
             output = `bundle`
             logger.info output
