@@ -11,16 +11,10 @@ class JobWorkersController < ApplicationController
   def create
     # Elastic Beanstalk workers will provide an SQS message id
     message_id = request.headers['X-Aws-Sqsd-Msgid']
-    region = 'us-east-1'
-
+    region = ENV['AWS_DEFAULT_REGION']
+    
     logger.info "message id #{message_id}"
     logger.info "environment args"
-    logger.info <<EOF
-ENV['AWS_ACCESS_KEY_ID']     => #{ENV['AWS_ACCESS_KEY_ID']}
-ENV['AWS_SECRET_ACCESS_KEY'] => #{ENV['AWS_SECRET_ACCESS_KEY']}
-ENV['S3_ASSET_BUCKET']       => #{ENV['S3_ASSET_BUCKET']}
-ENV['AWS_DEFAULT_REGION']    => #{ENV['AWS_DEFAULT_REGION']}
-EOF
 
     job_id = nil
 
@@ -97,12 +91,8 @@ EOF
 
         Bundler.with_clean_env do
           Dir.chdir "#{dir}/unzipped" do
-            logger.info "GEM_ROOT from ruby is"
-            logger.info "ENV['GEM_ROOT']"
-            logger.info "GEM_ROOT from backtick is"
-            logger.info `echo $GEM_ROOT`
             logger.info "== Ensure we have the gems"
-            output = `bundle install vendor/bundle`
+            output = `bundle install --path vendor/bundle`
             logger.info output
 
             logger.info "== Precompile the assets"
