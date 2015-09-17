@@ -7,7 +7,8 @@ class JobWorkersController < ApplicationController
   
   def show
   end
-  
+
+  # This takes a long time.  Use a continuation token.
   def create
     # Elastic Beanstalk workers will provide an SQS message id
     message_id = request.headers['X-Aws-Sqsd-Msgid']
