@@ -95,16 +95,13 @@ EOF
         output = `unzip #{file.path} -d #{dir}/unzipped`
         logger.info output
 
-        logger.info "== Ensure we have the gems"
-        Dir.chdir "#{dir}/unzipped" do
-          cmd = "bundle"
-          output = `#{cmd}`
-          logger.info output
-        end
-
-        logger.info "== Precompile the assets"
         Bundler.with_clean_env do
           Dir.chdir "#{dir}/unzipped" do
+            logger.info "== Ensure we have the gems"
+            output = `bundle`
+            logger.info output
+
+            logger.info "== Precompile the assets"
             output = `RAILS_ENV=production bundle exec rake assets:precompile`
             logger.info output
           end
@@ -135,6 +132,8 @@ EOF
            StandardError => e
       logger.error "#{message_id}: contains an error"
       logger.error e
+      logger.error "#{message_id}: error context..."
+      logger.error e.context
 
       if job_id
         success = codepipeline.put_job_failure_result(
@@ -149,7 +148,7 @@ EOF
         )
         logger.error "#{message_id}: Put Job failure for #{job_id}"
       else
-        logger.error "There is need to update job status as no job was acknowledged."
+        logger.info "No Job was acknowledged"
       end
 
       render json: { status: "error", message: e}.to_json, status: 500
