@@ -77,6 +77,7 @@ class JobWorkersController < ApplicationController
         dir = Dir.mktmpdir("precompile-assets")
         file = File.open(File.join(dir, filename), "wb")
 
+        # Copy pipeline artifact from S3 to local disk
         # NOTE - should I be doing something with encryption?
         s3.get_object(bucket: s3_location.bucket_name, key: s3_location.object_key) do |chunk|
           file.write(chunk)
@@ -85,11 +86,11 @@ class JobWorkersController < ApplicationController
         file.close
 
         logger.info "write file #{file.path}"
-        # Copy to S3
+
         logger.info "== Unzip #{file.path}"
         output = `unzip #{file.path} -d #{dir}/unzipped`
         logger.info output
-
+=begin
         Bundler.with_clean_env do
           Dir.chdir "#{dir}/unzipped" do
             logger.info "== Ensure we have the gems"
@@ -101,7 +102,7 @@ class JobWorkersController < ApplicationController
             logger.info output
           end
         end
-
+=end
         logger.info "== Sync to S3"
         asset_bucket = ENV['S3_ASSET_BUCKET'] || "markmans-reinvent-demo-assets"
         logger.info "ENV S3 asset bucket #{asset_bucket}"

@@ -15,10 +15,6 @@ $ rails server --daemon --binding=`curl --silent http://169.254.169.254/latest/m
 $ kill $(cat tmp/pids/server.pid)
 
 
-# Create an S3 bucket to store assets in
-$ aws s3 mb markmans-reinvent-demo-assets
-
-
 # Create IAM instance policy for Elastic Beanstalk
 ## Create New Policy
 Policy Name: aws-elastic-beanstalk-instance-profile
