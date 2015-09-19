@@ -106,7 +106,7 @@ class JobWorkersController < ApplicationController
         logger.info "== Sync to S3"
         asset_bucket = ENV['S3_ASSET_BUCKET'] || "markmans-reinvent-demo-assets"
         logger.info "ENV S3 asset bucket #{asset_bucket}"
-        output = `aws s3 sync #{dir}/unzipped/public/assets s3://#{asset_bucket}/assets/`
+        output = `aws s3 sync --exclude '.*' #{dir}/unzipped/public/assets s3://#{asset_bucket}/assets/`
         logger.info output
 
         success = codepipeline.put_job_success_result(
