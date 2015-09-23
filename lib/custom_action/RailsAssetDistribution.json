@@ -1,20 +1,11 @@
 {
   "category": "Deploy",
-  "provider": "Rails Asset Distributor",
+  "provider": "Rails-Asset-Distributor",
   "version": "1",
   "settings": {
-    "entityUrlTemplate": "https://my-build-instance/job/{Config:ProjectName}/",
+    "entityUrlTemplate": "https://my-build-instance/job/",
     "executionUrlTemplate": "https://my-build-instance/job/mybuildjob/lastSuccessfulBuild{ExternalExecutionId}/"
   },
-  "configurationProperties": [{
-    "name": "ProjectName",
-    "required": true,
-    "key": true,
-    "secret": false,
-    "queryable": false,
-    "description": "I want to get rid of this param.",
-    "type": "String"
-  }],
   "inputArtifactDetails": {
     "maximumCount": 1,
     "minimumCount": 1
