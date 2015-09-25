@@ -128,8 +128,6 @@ class JobWorkersController < ApplicationController
            StandardError => e
       logger.error "#{message_id}: contains an error"
       logger.error e
-      logger.error "#{message_id}: error context..."
-      logger.error e.context
 
       if job_id
         success = codepipeline.put_job_failure_result(
