@@ -4,9 +4,10 @@ class JobWorkersController < ApplicationController
   def index
     render plain: "Called as a GET.  This endpoint responds to POST", status: 200
   end
-  
+
+  # Handle HTTP POST requests triggered by EB
   def create
-    logger.info "== Poll For Jobs =="
+    logger.info "== Check for new work =="
 
     region = ENV['AWS_DEFAULT_REGION']
     asset_bucket = ENV['S3_ASSET_BUCKET']
