@@ -171,3 +171,34 @@ $ aws elasticbeanstalk create-environment \
   --option-settings \
     Namespace=aws:elasticbeanstalk:application:environment,OptionName=AWS_ACCESS_KEY_ID,Value=XX \
 	Namespace=aws:elasticbeanstalk:application:environment,OptionName=AWS_SECRET_KEY,Value=XX
+
+
+
+# Simulate from rails console
+region = 'us-east-1'
+asset_bucket = "codepipeline-reinvent-demo-assets"
+custom_action = AssetDistributorCustomAction.new(region, asset_bucket)
+custom_action.poll_for_jobs
+# status = custom_action.process_job
+custom_action.has_new_job?
+
+custom_action.process_job
+
+OR
+
+
+poll_results = custom_action.poll_results
+job = AssetDistributorJob.new(poll_results.jobs.first)
+meta_data = job.meta_data
+custom_action.acknowledge_job
+# build_artifact = distrubute_rails_assets_to_s3
+distributor = AssetDistributor.new(region,
+                                   meta_data.location.s3_location,
+                                   meta_data.name,
+                                   asset_bucket)
+distributor.download
+distributor.unzip
+distributor.sync_unzipped_assets
+
+
+

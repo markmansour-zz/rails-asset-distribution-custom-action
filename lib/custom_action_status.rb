@@ -1,6 +1,9 @@
 class CustomActionStatus
-  def initialize(is_ok, message = nil, expected = true)
+  attr_reader :error, :message
+
+  def initialize(is_ok, error = nil, message = nil, expected = true)
     @is_ok = is_ok
+    @error = error
     @message = message
     @expected = expected
   end
