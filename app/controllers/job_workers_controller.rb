@@ -16,18 +16,10 @@ class JobWorkersController < ApplicationController
     custom_action = AssetDistributorCustomAction.new(region, asset_bucket)
 
     custom_action.poll_for_jobs
-
-    if ! custom_action.has_new_job?
-      logger.info "#{message_id}: No Jobs"
-      return render json: { status:"ok" }, status: 200
-    end
-
     status = custom_action.process_job
 
-    logger.info "#{message_id}: Processing Job #{custom_action.job.id}"
-
     if status.ok?
-      logger.info "#{message_id}: Successfully processed custom action"
+      logger.info status.message || "#{message_id}: Successfully processed custom action"
       render json: status.to_h, status: 200
     else
       logger.error "#{message_id}: Unsuccessfully processed custom action"

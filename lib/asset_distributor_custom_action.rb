@@ -58,7 +58,7 @@ class AssetDistributorCustomAction
   end
 
   def no_job_status
-    CustomActionStatus.new(false, nil, "No Jobs", true)
+    CustomActionStatus.new(true, nil, "No Jobs", true)
   end
 
   def acknowledge_job
