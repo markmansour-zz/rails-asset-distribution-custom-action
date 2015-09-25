@@ -4,6 +4,6 @@ class ElasticBeanstalkWorker
   end
 
   def message_id
-    request.headers['X-Aws-Sqsd-Msgid']
+    @request.headers['X-Aws-Sqsd-Msgid']
   end
 end
