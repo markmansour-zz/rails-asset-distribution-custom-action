@@ -1,9 +1,6 @@
 class AssetDistributorJob
   extend Forwardable
 
-#  attr_reader :id, :token
-#  attr_reader :meta_data, :job # for debugging
-
   attr_reader :id, :token
   attr_reader :meta_data
 
@@ -11,8 +8,8 @@ class AssetDistributorJob
 
   def initialize(job)
     @job = job
-    @id = job.id
-    @nonce = job.nonce
+#    @id = job.id
+#    @nonce = job.nonce
     generate_token
     extract_meta_data
   end

@@ -10,8 +10,8 @@ class AssetDistributorCustomAction
 
   def initialize(region, asset_bucket)
     @region = region
-    @codepipeline = Aws::CodePipeline::Client.new(region: region)
     @asset_bucket = asset_bucket
+    @codepipeline = Aws::CodePipeline::Client.new(region: region)
   end
 
   def poll_for_jobs
@@ -72,16 +72,16 @@ class AssetDistributorCustomAction
   end
 
   def distrubute_rails_assets_to_s3
-    build_artifact = BuildArtifact.new(@region,
-                                       @meta_data.location.s3_location,
-                                       @meta_data.name,
-                                       @asset_bucket)
+    distributor = AssetDistributor.new(@region,
+                                          @meta_data.location.s3_location,
+                                          @meta_data.name,
+                                          @asset_bucket)
 
-    build_artifact.download
-    build_artifact.unzip
-    build_artifact.sync_unzipped_assets
+    distributor.download
+    distributor.unzip
+    distributor.sync_unzipped_assets
 
-    build_artifact
+    distributor
   end
 
   def put_configuration_failure_result
