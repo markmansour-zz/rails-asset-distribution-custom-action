@@ -10,11 +10,11 @@ class AssetDistributor
 
   def download
     @tmpdir = Dir.mktmpdir("rails-asset-distributor-custom-action")
-    File.open(File.join(@dir, @build_artifact_filename), "wb") do |file|
+    File.open(File.join(@tmpdir, @build_artifact_filename), "wb") do |file|
       # Copy pipeline artifact from S3 to local disk
       # NOTE - should I be doing something with encryption?
-      s3.get_object(bucket: s3_build_artifact_location.bucket_name, 
-                    key: s3_build_artifact_location.object_key) do |chunk|
+      s3.get_object(bucket: @s3_build_artifact_location.bucket_name, 
+                    key: @s3_build_artifact_location.object_key) do |chunk|
         file.write(chunk)
         @local_file = file
       end

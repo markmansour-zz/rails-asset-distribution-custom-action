@@ -73,9 +73,9 @@ class AssetDistributorCustomAction
 
   def distrubute_rails_assets_to_s3
     distributor = AssetDistributor.new(@region,
-                                          @meta_data.location.s3_location,
-                                          @meta_data.name,
-                                          @asset_bucket)
+                                       @meta_data.location.s3_location,
+                                       @meta_data.name,
+                                       @asset_bucket)
 
     distributor.download
     distributor.unzip
