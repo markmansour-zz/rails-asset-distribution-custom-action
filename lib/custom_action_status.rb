@@ -6,7 +6,7 @@ class CustomActionStatus
   end
 
   def ok?
-    is_ok
+    @is_ok
   end
 
   def error?
