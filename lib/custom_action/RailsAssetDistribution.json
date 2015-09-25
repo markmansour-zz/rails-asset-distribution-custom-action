@@ -3,8 +3,8 @@
   "provider": "Rails-Asset-Distributor",
   "version": "1",
   "settings": {
-    "entityUrlTemplate": "https://my-build-instance/job/",
-    "executionUrlTemplate": "https://my-build-instance/job/mybuildjob/lastSuccessfulBuild{ExternalExecutionId}/"
+    "entityUrlTemplate": "https://example.com/job/",
+    "executionUrlTemplate": "https://example.com/job/{ExternalExecutionId}/"
   },
   "inputArtifactDetails": {
     "maximumCount": 1,
