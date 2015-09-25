@@ -8,8 +8,37 @@ class JobWorkersController < ApplicationController
   def show
   end
 
-  # This takes a long time.  Use a continuation token.
   def create
+    region = ENV['AWS_DEFAULT_REGION']
+    message_id = ElasticBeanstalkWorker.new.message_id
+
+    custom_action = AssetDistributorCustomAction.new(region)
+
+    logger.info "== Poll For Jobs =="
+
+    custom_action.poll_for_jobs
+
+    if ! custom_action.has_new_job?
+      logger.info "#{message_id}: No Jobs"
+      return render json: { status:"ok" }, status: 200
+    end
+
+    status = custom_action.process_job
+
+    logger.info "#{message_id}: Processing Job #{custom_action.job.id}"
+
+    if status.ok?
+      logger.info "#{message_id}: Successfully processed custom action"
+      render json: status.to_h, status: 200
+    else
+      logger.error "#{message_id}: Unsuccessfully processed custom action"
+      logger.error "#{message_id}: #{status.message}"
+      render json: status.to_h, status: status.expected? ? 400 : 500
+    end
+  end
+
+  # This takes a long time.  Use a continuation token.
+  def create_old
     # Elastic Beanstalk workers will provide an SQS message id
     message_id = request.headers['X-Aws-Sqsd-Msgid']
     region = ENV['AWS_DEFAULT_REGION']
