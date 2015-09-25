@@ -13,7 +13,7 @@ class JobWorkersController < ApplicationController
 
     region = ENV['AWS_DEFAULT_REGION']
     asset_bucket = ENV['S3_ASSET_BUCKET']
-    message_id = ElasticBeanstalkWorker.new.message_id
+    message_id = ElasticBeanstalkWorker.new(request).message_id
 
     custom_action = AssetDistributorCustomAction.new(region, asset_bucket)
 
