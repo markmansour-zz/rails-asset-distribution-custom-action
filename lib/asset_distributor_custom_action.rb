@@ -8,9 +8,10 @@ class AssetDistributorCustomAction
   attr_reader :region
   attr_reader :poll_results, :job  # for debugging
 
-  def initialize(region)
+  def initialize(region, asset_bucket)
     @region = region
     @codepipeline = Aws::CodePipeline::Client.new(region: region)
+    @asset_bucket = asset_bucket
   end
 
   def poll_for_jobs
@@ -36,36 +37,18 @@ class AssetDistributorCustomAction
 
     begin
       @job = AssetDistributorJob.new(@poll_results.jobs.first)
+      @meta_data = @job.meta_data
 
-      meta_data = @job.meta_data
       acknowledge_job
 
       return put_configuration_failure_result if @job.build_artifact_missing?
 
-      s3_location = meta_data.location.s3_location
-      filename = meta_data.name
+      build_artifact = distrubute_rails_assets_to_s3
 
-      s3 = Aws::S3::Client.new(region: @region)
-
-      dir = Dir.mktmpdir("rails-asset-distributor-custom-action")
-      file = File.open(File.join(dir, filename), "wb")
-
-      # Copy pipeline artifact from S3 to local disk
-      # NOTE - should I be doing something with encryption?
-      s3.get_object(bucket: s3_location.bucket_name, key: s3_location.object_key) do |chunk|
-        file.write(chunk)
-      end
-
-      file.close
-
-      output = `unzip #{file.path} -d #{dir}/unzipped`
-      asset_bucket = ENV['S3_ASSET_BUCKET'] || "markmans-reinvent-demo-assets"
-      output = `aws s3 sync --delete #{dir}/unzipped/public/assets s3://#{asset_bucket}/assets/`
-
-      if $?.success?   # checks the return code from the backtick shell command
+      if build_artifact.sync_success?
         put_success_result
       else
-        put_s3_sync_failure_result(output)
+        put_s3_sync_failure_result(build_artifact.sync_output)
       end
     rescue Aws::CodePipeline::Errors::ServiceError, RuntimeError, StandardError => e
       put_job_failed_unexpected_result(e) if @job.acknowledged?
@@ -86,6 +69,19 @@ class AssetDistributorCustomAction
                                         )
 
     CustomActionStatus.new(true)
+  end
+
+  def distrubute_rails_assets_to_s3
+    build_artifact = BuildArtifact.new(@region,
+                                       @meta_data.location.s3_location,
+                                       @meta_data.name,
+                                       @asset_bucket)
+
+    build_artifact.download
+    build_artifact.unzip
+    build_artifact.sync_unzipped_assets
+
+    build_artifact
   end
 
   def put_configuration_failure_result

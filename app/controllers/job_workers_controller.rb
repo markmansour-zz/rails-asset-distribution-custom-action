@@ -9,12 +9,13 @@ class JobWorkersController < ApplicationController
   end
 
   def create
+    logger.info "== Poll For Jobs =="
+
     region = ENV['AWS_DEFAULT_REGION']
+    asset_bucket = ENV['S3_ASSET_BUCKET']
     message_id = ElasticBeanstalkWorker.new.message_id
 
-    custom_action = AssetDistributorCustomAction.new(region)
-
-    logger.info "== Poll For Jobs =="
+    custom_action = AssetDistributorCustomAction.new(region, asset_bucket)
 
     custom_action.poll_for_jobs
 
