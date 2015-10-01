@@ -39,6 +39,7 @@ class AssetDistributorCustomAction
 
       return put_configuration_failure_result if @job.build_artifact_missing?
 
+      # Main business logic is done here
       distributor = distribute_rails_assets_to_s3
 
       if distributor.sync_success?
